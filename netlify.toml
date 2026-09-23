@@ -4,3 +4,7 @@ publish = ".next"
 
 [build.environment]
 NEXT_TELEMETRY_DISABLED = "true"
+
+[dev]
+command = "npx next dev --webpack"
+targetPort = 3000
