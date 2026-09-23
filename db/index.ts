@@ -1,13 +1,5 @@
-import { env } from "cloudflare:workers";
-import { drizzle } from "drizzle-orm/d1";
-import * as schema from "./schema";
-
-export function getDb() {
-  if (!env.DB) {
-    throw new Error(
-      "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let your control plane inject the real binding values before using the database."
-    );
-  }
-
-  return drizzle(env.DB, { schema });
-}
+// This module previously provided a Drizzle ORM client backed by Cloudflare D1.
+// The app now uses Supabase for data storage. Database access is handled by
+// lib/server-store.ts using the Supabase JS client with the service role key.
+// This file is kept as a no-op placeholder to avoid breaking any remaining imports.
+export {};
