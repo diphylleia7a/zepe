@@ -1,0 +1,6 @@
+import {env} from 'cloudflare:workers';
+import {initialState,initialProfile,type State} from './model';
+import {initialBilling,istanbulDistricts} from './commerce';
+export function database(){if(!env.DB)throw new Error('Account storage is unavailable');return env.DB;}
+export async function readState(userId:string){const row=await database().prepare('SELECT state, version FROM zepe_accounts WHERE user_id = ?').bind(userId).first<{state:string;version:number}>();if(!row)return {state:structuredClone(initialState),version:0};const stored=JSON.parse(row.state);const profile={...initialProfile,...stored.profile,city:'İstanbul'};if(!istanbulDistricts.includes(profile.district))profile.district='';return {state:{...structuredClone(initialState),...stored,profile,billing:{...initialBilling,...stored.billing}} as State,version:row.version};}
+export async function writeState(userId:string,state:State,version:number){const result=await database().prepare('INSERT INTO zepe_accounts (user_id, state, version, updated_at) VALUES (?, ?, 1, ?) ON CONFLICT(user_id) DO UPDATE SET state = excluded.state, version = zepe_accounts.version + 1, updated_at = excluded.updated_at WHERE zepe_accounts.version = ?').bind(userId,JSON.stringify(state),new Date().toISOString(),version).run();if(!result.meta.changes)throw new Error('CONFLICT');return version+1;}
